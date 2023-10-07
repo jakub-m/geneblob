@@ -2,9 +2,11 @@ package matrix
 
 import "fmt"
 
+type C float32
+
 type Val[T any] interface {
 	Add(T) T
-	Mul(T) T
+	Mul(C) T
 }
 
 type Float32 float32
@@ -13,18 +15,8 @@ func (f Float32) Add(g Float32) Float32 {
 	return f + g
 }
 
-func (f Float32) Mul(g Float32) Float32 {
-	return f * g
-}
-
-type Int32 int32
-
-func (f Int32) Add(g Int32) Int32 {
-	return f + g
-}
-
-func (f Int32) Mul(g Int32) Int32 {
-	return f * g
+func (f Float32) Mul(g C) Float32 {
+	return Float32(float32(f) * float32(g))
 }
 
 // Matrix is a matrix of points interpreted as (x, y) points, supporting linear operations.
@@ -73,7 +65,7 @@ func (m *Matrix[T]) AddVal(c T) error {
 	return nil
 }
 
-func (m *Matrix[T]) MulConst(c T) error {
+func (m *Matrix[T]) MulConst(c C) error {
 	for it := m.Iter(); it.HasNext(); it.Next() {
 		m.SetIt(it, m.GetIt(it).Mul(c))
 	}
