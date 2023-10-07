@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"geneblob/matrix"
+	"log"
 	"math"
+	"math/rand"
 
 	"github.com/fogleman/gg"
 )
@@ -32,36 +34,50 @@ func (p XY) Abs() float64 {
 var _ matrix.Val[XY] = (*XY)(nil)
 
 func main() {
-	g := newGraph(4)
-	g.vertices = []XY{
-		{100 - 50, 200 + 50},
-		{200, 200},
-		{200, 100},
-		{100, 100},
+	//g := newGraph(4)
+	//g.vertices = []XY{
+	//	{100 - 50, 200 + 50},
+	//	{200, 200},
+	//	{200, 100},
+	//	{100, 100},
+	//}
+	//g.forceConst = 0.1
+	//g.baseDist = 100
+
+	//setBoth(g.edges, 0, 1, Bool(true))
+	//setBoth(g.edges, 1, 2, Bool(true))
+	//setBoth(g.edges, 2, 3, Bool(true))
+	//setBoth(g.edges, 3, 0, Bool(true))
+	//setBoth(g.edges, 0, 2, Bool(true))
+
+	rand.Seed(0)
+
+	n := 3
+	g := newGraph(n)
+	for i := range g.vertices {
+		g.vertices[i] = XY{50 + 200*rand.Float64(), 50 + 200*rand.Float64()}
 	}
-	g.forceConst = 0.1
-	g.baseDist = 100
+	for i := range g.vertices {
+		for k := range g.vertices {
+			if i < k {
+				if rand.Float64() < 1.00 {
+					setBoth(g.edges, i, k, true)
+				}
+			}
+		}
+	}
 
-	setBoth(g.edges, 0, 1, Bool(true))
-	setBoth(g.edges, 1, 2, Bool(true))
-	setBoth(g.edges, 2, 3, Bool(true))
-	setBoth(g.edges, 3, 0, Bool(true))
-	setBoth(g.edges, 0, 2, Bool(true))
-
-	fmt.Println(g.vertices)
-	for i := 0; i < 10; i++ {
+	iterCount := 5
+	for i := 0; i < iterCount; i++ {
+		log.Printf("iter %d", i)
 		g.updateForces()
 		// printMatrix(g.forces)
 		g.updatePoints()
-		fmt.Println(g.vertices)
-
+		// fmt.Println(g.vertices)
 		g.printPng(fmt.Sprintf("tmp_%0.3d.png", i))
-		for it := g.forces.Iter(); it.HasNext(); it.Next() {
-			fmt.Printf("%s %v\n", it, g.forces.GetIt(it).Abs())
-		}
-		// fmt.Println(
-		// 	lo.Map(g.forces, func(p XY, i int) float32 {p.Abs()})
-		// )
+		// for it := g.forces.Iter(); it.HasNext(); it.Next() {
+		// 	fmt.Printf("%s %v\n", it, g.forces.GetIt(it).Abs())
+		// }
 	}
 }
 
@@ -107,23 +123,38 @@ func (g *graph) updatePoints() {
 }
 
 func (g *graph) printPng(path string) {
+	lineWidth := 1.0
+	dotSize := 2.0
+	colors := []struct{ r, g, b float64 }{
+		{0, 0, 0},
+		{1, 0, 0},
+		{0, 1, 0},
+		{0, 0, 1},
+		{1, 1, 0},
+		{0, 1, 1},
+		{1, 0, 1},
+	}
+
 	dc := gg.NewContext(300, 300)
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
-	dc.SetRGB(0, 0, 0)
-	dc.SetLineWidth(3)
+	dc.SetLineWidth(lineWidth)
+	iColor := 0
 	for it := g.edges.Iter(); it.HasNext(); it.Next() {
 		if !g.edges.GetIt(it) {
 			continue
 		}
 		a := g.vertices[it.X]
 		b := g.vertices[it.Y]
+		color := colors[iColor]
+		dc.SetRGB(color.r, color.g, color.b)
+		iColor = (iColor + 1) % len(colors)
 		dc.DrawLine(a.X, a.Y, b.X, b.Y)
 		dc.Stroke()
-		fmt.Printf("draw %v->%v\n", a, b)
+		// fmt.Printf("draw %v->%v\n", a, b)
 	}
 	for _, v := range g.vertices {
-		dc.DrawPoint(v.X, v.Y, 5)
+		dc.DrawPoint(v.X, v.Y, dotSize)
 		dc.Stroke()
 	}
 	dc.SavePNG(path)
