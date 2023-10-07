@@ -34,10 +34,22 @@ func New[T Val[T]](xrange, yrange int) *Matrix[T] {
 	}
 }
 
+func SameSize[T Val[T], Q Val[Q]](m *Matrix[T], t *Matrix[Q]) bool {
+	return m.xrange == t.xrange && m.yrange == t.yrange
+}
+
 func (m *Matrix[T]) Fill(value T) {
 	for it := m.Iter(); it.HasNext(); it.Next() {
 		m.SetIt(it, value)
 	}
+}
+
+func (m *Matrix[T]) Set(x, y int, value T) {
+	i := y*m.xrange + x
+	if i < 0 || i >= len(m.fields) {
+		panic(fmt.Sprintf("index outside range i=%d, len(m.fields)=%d", i, len(m.fields)))
+	}
+	m.fields[i] = value
 }
 
 func (m *Matrix[T]) SetIt(it *Iter[T], v T) {
@@ -73,7 +85,7 @@ func (m *Matrix[T]) MulConst(c C) error {
 }
 
 func (m *Matrix[T]) checkSameSize(t *Matrix[T]) error {
-	if !(m.xrange == t.xrange && m.yrange == t.yrange) {
+	if !SameSize(m, t) {
 		return fmt.Errorf("matrices differ in size: %s vs %s", m.getSizeString(), t.getSizeString())
 	}
 	return nil

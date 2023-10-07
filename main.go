@@ -3,46 +3,85 @@ package main
 import (
 	"fmt"
 	"geneblob/matrix"
+	"math"
 )
 
-type Point struct {
+type XY struct {
 	X, Y float32
 }
 
-func (p Point) Add(q Point) Point {
-	return Point{
+func (p XY) Add(q XY) XY {
+	return XY{
 		X: p.X + q.X,
 		Y: p.Y + q.Y}
 }
 
-func (p Point) Mul(c matrix.C) Point {
-	return Point{
+func (p XY) Mul(c matrix.C) XY {
+	return XY{
 		X: p.X * float32(c),
 		Y: p.Y * float32(c),
 	}
 }
 
-var _ matrix.Val[Point] = (*Point)(nil)
+var _ matrix.Val[XY] = (*XY)(nil)
 
 func main() {
-	//	m := matrix.New[matrix.Float32](10, 5)
-	//	for it := m.Iter(); it.HasNext(); it.Next() {
-	//		m.SetIt(it, matrix.Float32(it.Y*100+it.X))
-	//	}
-	//	for it := m.Iter(); it.HasNext(); it.Next() {
-	//		fmt.Printf("%s %f\n", it, m.GetIt(it))
-	//	}
-	m := matrix.New[Point](10, 5)
-	for it := m.Iter(); it.HasNext(); it.Next() {
-		m.SetIt(it, Point{float32(it.X), float32(it.Y)})
+	//m := matrix.New[XY](10, 5)
+	//for it := m.Iter(); it.HasNext(); it.Next() {
+	//	m.SetIt(it, XY{float32(it.X), float32(it.Y)})
+	//}
+	//for it := m.Iter(); it.HasNext(); it.Next() {
+	//	fmt.Printf("%s %f\n", it, m.GetIt(it))
+	//}
+
+	n := 4
+	vertices := []XY{
+		{0, 0},
+		{1, 0},
+		{0, 1},
+		{2, 2},
 	}
-	for it := m.Iter(); it.HasNext(); it.Next() {
-		fmt.Printf("%s %f\n", it, m.GetIt(it))
+	assert(len(vertices) == n)
+	edges := matrix.New[Bool](n, n)
+	setBoth(edges, 0, 1, Bool(true))
+	setBoth(edges, 1, 2, Bool(true))
+	setBoth(edges, 2, 3, Bool(true))
+	setBoth(edges, 3, 0, Bool(true))
+
+	cForce := 1.0
+	forces := matrix.New[matrix.Float32](n, n)
+	assert(matrix.SameSize(edges, forces))
+
+	for it := edges.Iter(); it.HasNext(); it.Next() {
+		fmt.Printf("%s %v\n", it, edges.GetIt(it))
 	}
 }
 
-/*
+func setBoth[T matrix.Val[T]](m *matrix.Matrix[T], x, y int, p T) {
+	m.Set(x, y, p)
+	m.Set(y, x, p)
+}
 
-F_vec_ab = (b_vec-a_vec) * c_ab * (1 - d0/dist(a, b))
+func force(a, b XY, c, d0 float32) XY {
+	// F_vec_ab = (b_vec-a_vec) * c_ab * (1 - d0/dist(a, b))
+	xx := b.X - a.X
+	yy := b.Y - a.Y
+	dist_ab := float32(math.Sqrt(float64(xx*xx + yy*yy)))
+	return b.Add(a.Mul(-1)).Mul(matrix.C(c)).Mul(matrix.C(1 - d0/dist_ab))
+}
 
-*/
+type Bool bool
+
+func (f Bool) Add(g Bool) Bool {
+	panic("Add not implemented for Bool")
+}
+
+func (f Bool) Mul(g matrix.C) Bool {
+	panic("Mul not implemented for Bool")
+}
+
+func assert(cond bool) {
+	if !cond {
+		panic("condition not met")
+	}
+}
