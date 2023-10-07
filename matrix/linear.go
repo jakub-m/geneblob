@@ -52,11 +52,11 @@ func (m *Matrix[T]) Set(x, y int, value T) {
 	m.fields[i] = value
 }
 
-func (m *Matrix[T]) SetIt(it *Iter[T], v T) {
+func (m *Matrix[T]) SetIt(it *Iter, v T) {
 	m.fields[it.index()] = v
 }
 
-func (m *Matrix[T]) GetIt(it *Iter[T]) T {
+func (m *Matrix[T]) GetIt(it *Iter) T {
 	return m.fields[it.index()]
 }
 
@@ -95,34 +95,33 @@ func (m *Matrix[T]) getSizeString() string {
 	return fmt.Sprintf("%dx%d", m.xrange, m.yrange)
 }
 
-type Iter[T Val[T]] struct {
-	X, Y int
-	m    *Matrix[T]
+type Iter struct {
+	X, Y, xrange, yrange int
 }
 
-func (m *Matrix[T]) Iter() *Iter[T] {
-	return &Iter[T]{m: m}
+func (m *Matrix[T]) Iter() *Iter {
+	return &Iter{xrange: m.xrange, yrange: m.yrange}
 }
 
-func (it *Iter[T]) Next() {
+func (it *Iter) Next() {
 	if !it.HasNext() {
 		return
 	}
 	it.X++
-	if it.X >= it.m.xrange {
+	if it.X >= it.xrange {
 		it.X = 0
 		it.Y++
 	}
 }
 
-func (it *Iter[T]) HasNext() bool {
-	return it.Y < it.m.yrange
+func (it *Iter) HasNext() bool {
+	return it.Y < it.yrange
 }
 
-func (it *Iter[T]) index() int {
-	return it.X + it.Y*it.m.xrange
+func (it *Iter) index() int {
+	return it.X + it.Y*it.xrange
 }
 
-func (it *Iter[T]) String() string {
+func (it *Iter) String() string {
 	return fmt.Sprintf("%d,%d", it.X, it.Y)
 }

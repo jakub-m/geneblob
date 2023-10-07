@@ -23,6 +23,10 @@ func (p XY) Mul(c matrix.C) XY {
 	}
 }
 
+func (p XY) Abs() float32 {
+	return float32(math.Sqrt(float64(p.X*p.X + p.Y*p.Y)))
+}
+
 var _ matrix.Val[XY] = (*XY)(nil)
 
 func main() {
@@ -37,7 +41,7 @@ func main() {
 	n := 4
 	vertices := []XY{
 		{0, 0},
-		{1, 0},
+		{0.1, 0},
 		{0, 1},
 		{2, 2},
 	}
@@ -48,12 +52,31 @@ func main() {
 	setBoth(edges, 2, 3, Bool(true))
 	setBoth(edges, 3, 0, Bool(true))
 
-	cForce := 1.0
-	forces := matrix.New[matrix.Float32](n, n)
+	cForce := float32(0.1)
+	d0 := float32(100.0)
+	forces := matrix.New[XY](n, n)
 	assert(matrix.SameSize(edges, forces))
 
 	for it := edges.Iter(); it.HasNext(); it.Next() {
-		fmt.Printf("%s %v\n", it, edges.GetIt(it))
+		f := XY{}
+		if edges.GetIt(it) {
+			pointA := vertices[it.X]
+			pointB := vertices[it.Y]
+			f = calculateForce(pointA, pointB, cForce, d0)
+		}
+		forces.SetIt(it, f)
+	}
+
+	printMatrix(forces)
+
+	// The proportion of the force-to-movement of the point is already determined by cForce.
+	for it := forces.Iter(); it.HasNext(); it.Next() {
+	}
+}
+
+func printMatrix[T matrix.Val[T]](m *matrix.Matrix[T]) {
+	for it := m.Iter(); it.HasNext(); it.Next() {
+		fmt.Printf("%s %v\n", it, m.GetIt(it))
 	}
 }
 
@@ -62,8 +85,10 @@ func setBoth[T matrix.Val[T]](m *matrix.Matrix[T], x, y int, p T) {
 	m.Set(y, x, p)
 }
 
-func force(a, b XY, c, d0 float32) XY {
-	// F_vec_ab = (b_vec-a_vec) * c_ab * (1 - d0/dist(a, b))
+func calculateForce(a, b XY, c, d0 float32) XY {
+	// F_vec_ab =
+	//   (b_vec-a_vec)/dist(a, b) * c_ab * (dist(a, b) - d0) =
+	//   (b_vec-a_vec) * c_ab * (1 - d0/dist(a, b))
 	xx := b.X - a.X
 	yy := b.Y - a.Y
 	dist_ab := float32(math.Sqrt(float64(xx*xx + yy*yy)))
