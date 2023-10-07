@@ -2,7 +2,7 @@ package matrix
 
 import "fmt"
 
-type C float32
+type C float64
 
 type Val[T any] interface {
 	Add(T) T
