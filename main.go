@@ -9,19 +9,32 @@ type Point struct {
 	X, Y float32
 }
 
-//func (p Point) Add(q Point) Point {
-//}
-//
-//func (p Point) Mul(q Point) Point {
-//}
-//
-//
-//var _ matrix.Val[Point] = (*Point)(nil)
+func (p Point) Add(q Point) Point {
+	return Point{
+		X: p.X + q.X,
+		Y: p.Y + q.Y}
+}
+
+func (p Point) Mul(c matrix.C) Point {
+	return Point{
+		X: p.X * float32(c),
+		Y: p.Y * float32(c),
+	}
+}
+
+var _ matrix.Val[Point] = (*Point)(nil)
 
 func main() {
-	m := matrix.New[matrix.Float32](10, 5)
+	//	m := matrix.New[matrix.Float32](10, 5)
+	//	for it := m.Iter(); it.HasNext(); it.Next() {
+	//		m.SetIt(it, matrix.Float32(it.Y*100+it.X))
+	//	}
+	//	for it := m.Iter(); it.HasNext(); it.Next() {
+	//		fmt.Printf("%s %f\n", it, m.GetIt(it))
+	//	}
+	m := matrix.New[Point](10, 5)
 	for it := m.Iter(); it.HasNext(); it.Next() {
-		m.SetIt(it, matrix.Float32(it.Y*100+it.X))
+		m.SetIt(it, Point{float32(it.X), float32(it.Y)})
 	}
 	for it := m.Iter(); it.HasNext(); it.Next() {
 		fmt.Printf("%s %f\n", it, m.GetIt(it))
