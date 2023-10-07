@@ -2,34 +2,57 @@ package matrix
 
 import "fmt"
 
-type Val float32
+type Val[T any] interface {
+	Add(T) T
+	Mul(T) T
+}
+
+type Float32 float32
+
+func (f Float32) Add(g Float32) Float32 {
+	return f + g
+}
+
+func (f Float32) Mul(g Float32) Float32 {
+	return f * g
+}
+
+type Int32 int32
+
+func (f Int32) Add(g Int32) Int32 {
+	return f + g
+}
+
+func (f Int32) Mul(g Int32) Int32 {
+	return f * g
+}
 
 // Matrix is a matrix of points interpreted as (x, y) points, supporting linear operations.
-type Matrix[T Val] struct {
-	fields []float32
+type Matrix[T Val[T]] struct {
+	fields []T
 	yrange int
 	xrange int
 }
 
-func New[T Val](xrange, yrange int) *Matrix[T] {
+func New[T Val[T]](xrange, yrange int) *Matrix[T] {
 	return &Matrix[T]{
-		fields: make([]float32, xrange*yrange),
+		fields: make([]T, xrange*yrange),
 		xrange: xrange,
 		yrange: yrange,
 	}
 }
 
-func (m *Matrix[T]) Fill(value float32) {
+func (m *Matrix[T]) Fill(value T) {
 	for it := m.Iter(); it.HasNext(); it.Next() {
 		m.SetIt(it, value)
 	}
 }
 
-func (m *Matrix[T]) SetIt(it *Iter[T], v float32) {
+func (m *Matrix[T]) SetIt(it *Iter[T], v T) {
 	m.fields[it.index()] = v
 }
 
-func (m *Matrix[T]) GetIt(it *Iter[T]) float32 {
+func (m *Matrix[T]) GetIt(it *Iter[T]) T {
 	return m.fields[it.index()]
 }
 
@@ -38,21 +61,21 @@ func (m *Matrix[T]) Add(t *Matrix[T]) error {
 		return err
 	}
 	for it := m.Iter(); it.HasNext(); it.Next() {
-		m.SetIt(it, m.GetIt(it)+t.GetIt(it))
+		m.SetIt(it, m.GetIt(it).Add(t.GetIt(it)))
 	}
 	return nil
 }
 
-func (m *Matrix[T]) AddVal(c float32) error {
+func (m *Matrix[T]) AddVal(c T) error {
 	for it := m.Iter(); it.HasNext(); it.Next() {
-		m.SetIt(it, m.GetIt(it)+c)
+		m.SetIt(it, m.GetIt(it).Add(c))
 	}
 	return nil
 }
 
-func (m *Matrix[T]) MulConst(c float32) error {
+func (m *Matrix[T]) MulConst(c T) error {
 	for it := m.Iter(); it.HasNext(); it.Next() {
-		m.SetIt(it, m.GetIt(it)*c)
+		m.SetIt(it, m.GetIt(it).Mul(c))
 	}
 	return nil
 }
@@ -68,7 +91,7 @@ func (m *Matrix[T]) getSizeString() string {
 	return fmt.Sprintf("%dx%d", m.xrange, m.yrange)
 }
 
-type Iter[T Val] struct {
+type Iter[T Val[T]] struct {
 	X, Y int
 	m    *Matrix[T]
 }
