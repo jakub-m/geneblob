@@ -1,4 +1,4 @@
-package main
+package matrix
 
 import "fmt"
 
@@ -9,7 +9,7 @@ type Matrix struct {
 	xrange int
 }
 
-func NewMatrix(xrange, yrange int) *Matrix {
+func New(xrange, yrange int) *Matrix {
 	return &Matrix{
 		fields: make([]float32, xrange*yrange),
 		xrange: xrange,
@@ -23,11 +23,11 @@ func (m *Matrix) Fill(value float32) {
 	}
 }
 
-func (m *Matrix) SetIt(it *MatrixIter, v float32) {
+func (m *Matrix) SetIt(it *Iter, v float32) {
 	m.fields[it.index()] = v
 }
 
-func (m *Matrix) GetIt(it *MatrixIter) float32 {
+func (m *Matrix) GetIt(it *Iter) float32 {
 	return m.fields[it.index()]
 }
 
@@ -76,16 +76,16 @@ func (m *Matrix) getSizeString() string {
 	return fmt.Sprintf("%dx%d", m.xrange, m.yrange)
 }
 
-type MatrixIter struct {
+type Iter struct {
 	X, Y int
 	m    *Matrix
 }
 
-func (m *Matrix) Iter() *MatrixIter {
-	return &MatrixIter{m: m}
+func (m *Matrix) Iter() *Iter {
+	return &Iter{m: m}
 }
 
-func (it *MatrixIter) Next() {
+func (it *Iter) Next() {
 	if !it.HasNext() {
 		return
 	}
@@ -96,14 +96,14 @@ func (it *MatrixIter) Next() {
 	}
 }
 
-func (it *MatrixIter) HasNext() bool {
+func (it *Iter) HasNext() bool {
 	return it.Y < it.m.yrange
 }
 
-func (it *MatrixIter) index() int {
+func (it *Iter) index() int {
 	return it.X + it.Y*it.m.xrange
 }
 
-func (it *MatrixIter) String() string {
+func (it *Iter) String() string {
 	return fmt.Sprintf("%d,%d", it.X, it.Y)
 }

@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"geneblob/matrix"
+)
 
 func main() {
-	m := NewMatrix(10, 5)
+	m := matrix.New(10, 5)
 	for it := m.Iter(); it.HasNext(); it.Next() {
 		m.SetIt(it, float32(it.Y*100+it.X))
 	}
