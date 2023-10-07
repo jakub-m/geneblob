@@ -34,18 +34,19 @@ var _ matrix.Val[XY] = (*XY)(nil)
 func main() {
 	g := newGraph(4)
 	g.vertices = []XY{
-		{0, 0},
-		{10, 0},
-		{0, 100},
+		{100 - 50, 200 + 50},
 		{200, 200},
+		{200, 100},
+		{100, 100},
 	}
 	g.forceConst = 0.1
 	g.baseDist = 100
 
-	// setBoth(g.edges, 0, 1, Bool(true))
-	// setBoth(g.edges, 1, 2, Bool(true))
-	// setBoth(g.edges, 2, 3, Bool(true))
+	setBoth(g.edges, 0, 1, Bool(true))
+	setBoth(g.edges, 1, 2, Bool(true))
+	setBoth(g.edges, 2, 3, Bool(true))
 	setBoth(g.edges, 3, 0, Bool(true))
+	setBoth(g.edges, 0, 2, Bool(true))
 
 	fmt.Println(g.vertices)
 	for i := 0; i < 10; i++ {
@@ -54,7 +55,7 @@ func main() {
 		g.updatePoints()
 		fmt.Println(g.vertices)
 
-		g.printPng(fmt.Sprintf("tmp_%d.png", i))
+		g.printPng(fmt.Sprintf("tmp_%0.3d.png", i))
 		for it := g.forces.Iter(); it.HasNext(); it.Next() {
 			fmt.Printf("%s %v\n", it, g.forces.GetIt(it).Abs())
 		}
@@ -107,6 +108,10 @@ func (g *graph) updatePoints() {
 
 func (g *graph) printPng(path string) {
 	dc := gg.NewContext(300, 300)
+	dc.SetRGB(1, 1, 1)
+	dc.Clear()
+	dc.SetRGB(0, 0, 0)
+	dc.SetLineWidth(3)
 	for it := g.edges.Iter(); it.HasNext(); it.Next() {
 		if !g.edges.GetIt(it) {
 			continue
@@ -114,7 +119,14 @@ func (g *graph) printPng(path string) {
 		a := g.vertices[it.X]
 		b := g.vertices[it.Y]
 		dc.DrawLine(a.X, a.Y, b.X, b.Y)
+		dc.Stroke()
+		fmt.Printf("draw %v->%v\n", a, b)
 	}
+	for _, v := range g.vertices {
+		dc.DrawPoint(v.X, v.Y, 5)
+		dc.Stroke()
+	}
+	dc.SavePNG(path)
 }
 
 func printMatrix[T matrix.Val[T]](m *matrix.Matrix[T]) {
