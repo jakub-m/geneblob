@@ -126,7 +126,9 @@ func (g *Graph) drawNewImage() *gg.Context {
 		dc.Stroke()
 		// fmt.Printf("draw %v->%v\n", a, b)
 	}
-	for _, v := range g.Vertices {
+	for i, v := range g.Vertices {
+		color := colors[i%len(colors)]
+		dc.SetRGB(color.r, color.g, color.b)
 		dc.DrawPoint(v.X, v.Y, dotSize)
 		dc.Stroke()
 	}
