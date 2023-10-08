@@ -19,23 +19,23 @@ func (f Float32) Mul(g C) Float32 {
 	return Float32(float32(f) * float32(g))
 }
 
-// Matrix is a matrix of points interpreted as (x, y) points, supporting linear operations.
+// Matrix is a matrix of points interpreted as (j, k) points, supporting linear operations.
 type Matrix[T Val[T]] struct {
 	fields []T
-	yrange int
-	xrange int
+	jRange int
+	kRange int
 }
 
-func New[T Val[T]](xrange, yrange int) *Matrix[T] {
+func New[T Val[T]](jRange, kRange int) *Matrix[T] {
 	return &Matrix[T]{
-		fields: make([]T, xrange*yrange),
-		xrange: xrange,
-		yrange: yrange,
+		fields: make([]T, jRange*kRange),
+		jRange: jRange,
+		kRange: kRange,
 	}
 }
 
 func SameSize[T Val[T], Q Val[Q]](m *Matrix[T], t *Matrix[Q]) bool {
-	return m.xrange == t.xrange && m.yrange == t.yrange
+	return m.jRange == t.jRange && m.kRange == t.kRange
 }
 
 func (m *Matrix[T]) Fill(value T) {
@@ -45,13 +45,13 @@ func (m *Matrix[T]) Fill(value T) {
 }
 
 // SetSym sets the value symmetrically w.r.t the diagonal.
-func (m *Matrix[T]) SetSym(x, y int, p T) {
-	m.Set(x, y, p)
-	m.Set(y, x, p)
+func (m *Matrix[T]) SetSym(j, k int, p T) {
+	m.Set(j, k, p)
+	m.Set(k, j, p)
 }
 
-func (m *Matrix[T]) Set(x, y int, value T) {
-	i := y*m.xrange + x
+func (m *Matrix[T]) Set(j, k int, value T) {
+	i := k*m.jRange + j
 	if i < 0 || i >= len(m.fields) {
 		panic(fmt.Sprintf("index outside range i=%d, len(m.fields)=%d", i, len(m.fields)))
 	}
@@ -98,36 +98,36 @@ func (m *Matrix[T]) checkSameSize(t *Matrix[T]) error {
 }
 
 func (m *Matrix[T]) getSizeString() string {
-	return fmt.Sprintf("%dx%d", m.xrange, m.yrange)
+	return fmt.Sprintf("%dx%d", m.jRange, m.kRange)
 }
 
 type Iter struct {
-	X, Y, xrange, yrange int
+	J, K, jRange, kRange int
 }
 
 func (m *Matrix[T]) Iter() *Iter {
-	return &Iter{xrange: m.xrange, yrange: m.yrange}
+	return &Iter{jRange: m.jRange, kRange: m.kRange}
 }
 
 func (it *Iter) Next() {
 	if !it.HasNext() {
 		return
 	}
-	it.X++
-	if it.X >= it.xrange {
-		it.X = 0
-		it.Y++
+	it.J++
+	if it.J >= it.jRange {
+		it.J = 0
+		it.K++
 	}
 }
 
 func (it *Iter) HasNext() bool {
-	return it.Y < it.yrange
+	return it.K < it.kRange
 }
 
 func (it *Iter) index() int {
-	return it.X + it.Y*it.xrange
+	return it.J + it.K*it.jRange
 }
 
 func (it *Iter) String() string {
-	return fmt.Sprintf("%d,%d", it.X, it.Y)
+	return fmt.Sprintf("%d,%d", it.J, it.K)
 }

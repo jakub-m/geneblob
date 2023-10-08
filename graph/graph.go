@@ -55,8 +55,8 @@ func (g *Graph) UpdateForces() {
 	for it := g.Edges.Iter(); it.HasNext(); it.Next() {
 		f := XY{}
 		if g.Edges.GetIt(it) {
-			pointA := g.Vertices[it.X]
-			pointB := g.Vertices[it.Y]
+			pointA := g.Vertices[it.J]
+			pointB := g.Vertices[it.K]
 			f = calculateForce(pointA, pointB, g.ForceConst, g.BaseDist)
 		}
 		g.forces.SetIt(it, f)
@@ -68,7 +68,7 @@ func (g *Graph) UpdateForces() {
 // of the point is already determined by the forceConst.
 func (g *Graph) UpdatePoints() {
 	for it := g.forces.Iter(); it.HasNext(); it.Next() {
-		i := it.X
+		i := it.J
 		g.Vertices[i] = g.Vertices[i].Add(g.forces.GetIt(it))
 	}
 }
@@ -95,8 +95,8 @@ func (g *Graph) PrintPNG(path string) {
 		if !g.Edges.GetIt(it) {
 			continue
 		}
-		a := g.Vertices[it.X]
-		b := g.Vertices[it.Y]
+		a := g.Vertices[it.J]
+		b := g.Vertices[it.K]
 		color := colors[iColor]
 		dc.SetRGB(color.r, color.g, color.b)
 		iColor = (iColor + 1) % len(colors)
