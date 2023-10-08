@@ -25,12 +25,23 @@ func (p XY) Mul(c matrix.C) XY {
 		Y: p.Y * float64(c),
 	}
 }
-
 func (p XY) Abs() float64 {
 	return math.Sqrt(p.X*p.X + p.Y*p.Y)
 }
 
 var _ matrix.Val[XY] = (*XY)(nil)
+
+type Bool bool
+
+func (f Bool) Add(g Bool) Bool {
+	panic("Add not implemented for Bool")
+}
+
+func (f Bool) Mul(g matrix.C) Bool {
+	panic("Mul not implemented for Bool")
+}
+
+var _ matrix.Val[Bool] = (*Bool)(nil)
 
 type Graph struct {
 	Vertices   []XY
@@ -120,14 +131,4 @@ func calculateForce(a, b XY, c, d0 float64) XY {
 	yy := b.Y - a.Y
 	dist_ab := math.Sqrt(xx*xx + yy*yy)
 	return b.Add(a.Mul(-1)).Mul(matrix.C(c)).Mul(matrix.C(1 - d0/dist_ab))
-}
-
-type Bool bool
-
-func (f Bool) Add(g Bool) Bool {
-	panic("Add not implemented for Bool")
-}
-
-func (f Bool) Mul(g matrix.C) Bool {
-	panic("Mul not implemented for Bool")
 }
