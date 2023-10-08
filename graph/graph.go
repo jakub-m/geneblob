@@ -4,6 +4,7 @@ package graph
 
 import (
 	"geneblob/matrix"
+	"image"
 	"math"
 
 	"github.com/fogleman/gg"
@@ -84,7 +85,17 @@ func (g *Graph) UpdatePoints() {
 	}
 }
 
-func (g *Graph) PrintPNG(path string) {
+func (g *Graph) DrawImage() image.Image {
+	dc := g.drawNewImage()
+	return dc.Image()
+}
+
+func (g *Graph) SavePNG(path string) {
+	dc := g.drawNewImage()
+	dc.SavePNG(path)
+}
+
+func (g *Graph) drawNewImage() *gg.Context {
 	lineWidth := 1.0
 	dotSize := 2.0
 	colors := []struct{ r, g, b float64 }{
@@ -119,7 +130,7 @@ func (g *Graph) PrintPNG(path string) {
 		dc.DrawPoint(v.X, v.Y, dotSize)
 		dc.Stroke()
 	}
-	dc.SavePNG(path)
+	return dc
 }
 
 // calculateForce calculates force vector working on A towards (because of) B.
