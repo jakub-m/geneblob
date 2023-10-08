@@ -44,6 +44,12 @@ func (m *Matrix[T]) Fill(value T) {
 	}
 }
 
+// SetSym sets the value symmetrically w.r.t the diagonal.
+func (m *Matrix[T]) SetSym(x, y int, p T) {
+	m.Set(x, y, p)
+	m.Set(y, x, p)
+}
+
 func (m *Matrix[T]) Set(x, y int, value T) {
 	i := y*m.xrange + x
 	if i < 0 || i >= len(m.fields) {
